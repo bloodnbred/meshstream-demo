@@ -99,6 +99,9 @@ export function Scene4Travel({ active }: { active: boolean }) {
                 <>
                   <rect x={n.x - 34} y={n.y - 16} width={68} height={32} rx={8} fill="#13161C" stroke="#323947" />
                   <rect x={n.x - 34} y={n.y - 16} width={68} height={2} rx={1} fill="#C9F73A" />
+                  <text x={n.x} y={n.y + 4} textAnchor="middle" className="num" fontSize="10" fill="#ECEEF2">
+                    origin
+                  </text>
                 </>
               ) : (
                 <circle cx={n.x} cy={n.y} r={n.id.startsWith("s") ? 13 : 9} fill="#0D0F13" stroke="#C9F73A" strokeWidth={1.5} />

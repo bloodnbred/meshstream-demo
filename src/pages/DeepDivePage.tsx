@@ -19,6 +19,7 @@ type SelectStage = "idle" | "cache" | "peer" | "origin" | "served";
 
 function SourceSelection() {
   const [stage, setStage] = useState<SelectStage>("idle");
+  const stageRef = useRef<SelectStage>("idle");
   const [peerHasPart, setPeerHasPart] = useState(true);
   const [peerFast, setPeerFast] = useState(true);
   const [elapsed, setElapsed] = useState(0);
@@ -27,42 +28,50 @@ function SourceSelection() {
 
   const deadline = SWARM_CONST.DEADLINE_MS;
 
+  /** The rAF loop reads the stage from a ref — React state would be stale. */
+  const go = (next: SelectStage) => {
+    stageRef.current = next;
+    setStage(next);
+  };
+
   const run = () => {
-    setStage("cache");
+    go("cache");
     setElapsed(0);
     const t0 = performance.now();
 
     const step = (now: number) => {
       const t = now - t0;
       setElapsed(t);
+      const current = stageRef.current;
 
-      if (stage === "cache") {
+      if (current === "cache") {
         // The local cache answers in ~0 ms.
         if (t > 260) {
-          setStage("peer");
-          return requestAnimationFrame(step);
+          go("peer");
+          rafRef.current = requestAnimationFrame(step);
+          return;
         }
-      }
-      if (stage === "peer") {
+      } else if (current === "peer") {
         if (!peerHasPart) {
           if (t > 260) {
-            setStage("origin");
-            return requestAnimationFrame(step);
+            go("origin");
+            rafRef.current = requestAnimationFrame(step);
+            return;
           }
         } else if (peerFast) {
           if (t > 520) {
-            setStage("served");
+            go("served");
             return;
           }
         } else if (t > deadline) {
           // The deadline missed: cancel the peer request, fall back to origin.
-          setStage("origin");
-          return requestAnimationFrame(step);
+          go("origin");
+          rafRef.current = requestAnimationFrame(step);
+          return;
         }
-      }
-      if (stage === "origin") {
+      } else if (current === "origin") {
         if (t > deadline + 320) {
-          setStage("served");
+          go("served");
           return;
         }
       }
@@ -170,7 +179,7 @@ function SourceSelection() {
           <Button
             variant="secondary"
             onClick={() => {
-              setStage("idle");
+              go("idle");
               setElapsed(0);
             }}
           >
@@ -669,7 +678,7 @@ export function DeepDivePage() {
         </p>
       </header>
 
-      <div className="grid gap-3 xl:grid-cols-2">
+      <div className="grid items-start gap-3 xl:grid-cols-2">
         <SourceSelection />
         <ProtocolPlayer />
         <UploadPolicy />
