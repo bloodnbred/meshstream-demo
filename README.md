@@ -186,6 +186,19 @@ surface that shows a number says where the number comes from.
 
 ---
 
+## Docs
+
+- [`docs/PROJECT-EXPLANATION.md`](./docs/PROJECT-EXPLANATION.md) — the full
+  write-up: what the system does, how it works on the wire, and how it maps to
+  computer-networking concepts (overlay vs underlay, tree vs mesh, NAT
+  traversal, staleness, tail latency, fairness, quorum integrity). Also
+  contains the defence run-of-show and question prep.
+- [`../plan.md`](../plan.md) — the architecture plan (source of truth).
+- [`../README.md`](../README.md) — operations, ports and the verified-run
+  evidence from the real system.
+
+---
+
 ## Offline guarantee
 
 - No CDN, no remote fonts, no remote images, no `fetch`/`XHR` to a remote host.
